@@ -1,0 +1,150 @@
+Config { 
+   -- appearance
+   -- FONT SPEC: FAMILY_NAME PLAIN_STYLE VARIANT WEIGHT STRETCH GRAVITY SIZE_IN_PTS
+   font =         "Bitstream Vera Sans Mono Normal Demi-Bold Thin 11"
+   , additionalFonts =         ["Bitstream Vera Sans Mono Normal Demi-Bold Thin 20", "Source Code Pro Normal Demi-Bold Thin 20"]
+   --font =         "Source Code Pro Normal Demi-Bold Thin 12"
+   , bgColor =      "black"
+   , fgColor =      "white"
+   , position =     TopH 25
+   , border =       BottomBM 0
+   , borderColor =  "#646464"
+
+   -- layout
+   , sepChar =  "%"   -- delineator between plugin names and straight text
+   , alignSep = "}{"  -- separator between left-right alignment
+   , template =	"\
+		\%StdinReader%}\
+		\<fn=1><fc=#1793d1>%archlogo%</fc></fn>\
+		\<hspace=20/><action=gnome-calendar>%date%</action>\
+		\<hspace=15/>%battery%\
+		\<hspace=15/>%dynnetwork%\
+		\{\
+		\%locks%\
+		\<hspace=15/>%wlan0wi%\
+		\<hspace=15/>%bright%\
+		\<hspace=15/><action=pavucontrol>%alsa:default:Master%</action>\
+		\<hspace=15/>%multicpu%\
+		\<hspace=15/>%multicoretemp%\
+		\<hspace=15/>%memory%\
+		\"
+
+   -- general behavior
+   , lowerOnStart =     True    -- send to bottom of window stack on start
+   , hideOnStart =      False   -- start with window unmapped (hidden)
+   , allDesktops =      True    -- show on all desktops
+   , overrideRedirect = True    -- set the Override Redirect flag (Xlib)
+   , pickBroadest =     False   -- choose widest display (multi-monitor)
+   , persistent =       True    -- enable/disable hiding (True = disabled)
+
+   -- plugins
+   --   Numbers can be automatically colored according to their value. xmobar
+   --   decides color based on a three-tier/two-cutoff system, controlled by
+   --   command options:
+   --     --Low sets the low cutoff
+   --     --High sets the high cutoff
+   --
+   --     --low sets the color below --Low cutoff
+   --     --normal sets the color between --Low and --High cutoffs
+   --     --High sets the color above --High cutoff
+   --
+   --   The --template option controls how the plugin is displayed. Text
+   --   color can be set by enclosing in <fc></fc> tags. For more details
+   --   see http://projects.haskell.org/xmobar/#system-monitor-plugins.
+   , commands = [
+	  Run DynNetwork		[ "--template" , "<fc=#86dbda>\
+								\\xf0c9d\
+								\<hspace=15/><dev>: \xf0ce1\
+								\<hspace=8/><tx>\
+								\<hspace=10/>\xf0cdb\
+								\<hspace=8/><rx>\
+							\</fc>"
+	                		, "--Low"      , "1000000"       -- units: B/s
+	                		, "--High"     , "5000000"       -- units: B/s
+	                		, "--low"      , "#86dbda"
+	                		--, "--low"      , "#00b800"
+	                		, "--normal"   , "orange"
+	                		, "--high"     , "red"
+	                		, "-S"     , "True"
+					-- Min width of ingress/egress fields
+	                		, "-m"     , "7"
+					, "--"
+	                		] 10
+	, Run Wireless "wlan0" 		[ "--template" , "<fc=#df7fe0>\xf1eb<hspace=12/><ssid> <quality></fc>"
+	                		, "--Low"      , "65"
+	                		, "--High"     , "80"
+	                		, "--low"      , "red"
+	                		, "--normal"   , "orange"
+	                		, "--high"     , "#df7fe0"
+	                		] 150
+	, Run MultiCpu  		[ "--template" , "<fc=#00b800>\xf0379: <total>%</fc>"
+	                		, "--Low"      , "50"         -- units: %
+	                		, "--High"     , "85"         -- units: %
+	                		, "--low"      , "#00b800"
+	                		, "--normal"   , "orange"
+	                		, "--high"     , "red"
+	                		] 150
+	, Run MultiCoreTemp		[ "--template" , "<fc=#db946c>\xf0e01: <avg>°C</fc>"
+	                   		, "--Low"      , "70"        -- units: °C
+	                   		, "--High"     , "80"        -- units: °C
+	                   		, "--low"      , "#db946c"
+	                   		, "--normal"   , "orange"
+	                   		, "--high"     , "red"
+	                   		, "--"
+	                   		, "--mintemp"     , "20"
+	                   		, "--maxtemp"     , "100"
+	                   		] 50
+	, Run Memory    		[ "--template" ,"<fc=#1793d1>\xeae6: <usedratio>%</fc>"
+	                		, "--Low"      , "40"        -- units: %
+	                		, "--High"     , "80"        -- units: %
+	                		, "--low"      , "#1793d1"
+	                		, "--normal"   , "orange"
+	                		, "--high"     , "red"
+	                		] 150
+	, Run Brightness		[ "--template" ,"<fc=#e0cb26>\xf00df: <percent>%</fc>"
+	                		, "--"
+	                		-- , "--brightness-icon-pattern", "<icon=bright_%%.xpm/>"
+	                		, "-D"
+	                		, "intel_backlight"
+	                		] 150
+	, Run Alsa "default" "Master"	[ "--template", "<status> <fc=#86dbda><volume>%</fc>"
+					, "--"
+					, "--onc", "#86dbda"
+					, "--on", "\xf0580"
+					, "--offc", "#cd0000"
+					, "--off", "\xf0581"
+					]
+	, Run Battery			[ "--template" , "<acstatus>"
+	             			, "--Low"      , "10"        -- units: %
+	             			, "--High"     , "80"        -- units: %
+	             			, "--low"      , "red"
+	             			, "--normal"   , "#FF9900"
+	             			, "--high"     , "#00b800"
+	             			, "--"
+	             			-- discharging status options
+	             			, "--lows"	, "\xf007b <left>% (<timeleft>)"
+	             			, "--mediums"	, "\xf007f <left>% (<timeleft>)"
+	             			, "--highs"	, "\xf0082 <left>% (<timeleft>)"
+	             			-- Hide default string during AC "off" status
+	             			, "-o"		,""
+	             			-- AC "on" status
+	             			, "-O"		, "\xf0084 <left>% <timeleft>"
+	             			-- charged status
+	             			, "-i"		, "\xf06a5"
+	             			-- Critical battery options
+	             			, "-A"		, "2"
+	             			, "-a"		, "systemctl hibernate"
+	             			] 50
+	, Run Date			"\
+					\<fc=#c590db>%F (%a) %T</fc>\
+					\" "date" 10
+	, Run StdinReader
+	, Run Locks
+	, Run Com "printf" ["%b", "\xF08C7"] "archlogo" 0
+	]
+        ---- weather monitor
+        --  [ Run Weather "RJTT" [ "--template"
+        --                     , "<skyCondition> | Weather: <fc=#4682B4><tempC></fc>°C | <fc=#4682B4><rh></fc>% | <fc=#4682B4><pressure></fc>hPa"
+        --                     ] 36000
+	--
+   }
